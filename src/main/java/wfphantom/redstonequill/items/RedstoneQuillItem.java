@@ -25,11 +25,10 @@ import net.minecraft.world.phys.HitResult;
 import wfphantom.redstonequill.ModContent;
 import wfphantom.redstonequill.blocks.RedstoneTrack;
 import wfphantom.redstonequill.libmc.Inventories;
-import wfphantom.redstonequill.libmc.StandardItems;
 
 import java.util.Objects;
 
-public class RedstoneQuillItem extends StandardItems.BaseItem {
+public class RedstoneQuillItem extends Item {
     public RedstoneQuillItem(Item.Properties properties) {
         super(properties);
     }
@@ -51,7 +50,8 @@ public class RedstoneQuillItem extends StandardItems.BaseItem {
         if (!isQuill(stack)) stack = player.getMainHandItem();
         if (!isQuill(stack)) stack = player.getOffhandItem();
         if (isQuill(stack)) attack(stack, pos, player);
-        return false;
+        if (state.is(ModContent.references.TRACK_BLOCK)) return false;
+        return state.getBlock().defaultDestroyTime() < 0.5f;
     }
 
     @Override

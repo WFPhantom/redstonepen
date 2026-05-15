@@ -56,12 +56,8 @@ public class Registries {
         return registered_items.get(name);
     }
 
-    public static BlockEntityType<?> getBlockEntityType(String block_name) {
-        return registered_block_entity_types.get(block_name);
-    }
-
     public static BlockEntityType<?> getBlockEntityTypeOfBlock(String block_name) {
-        return getBlockEntityType("tet_" + block_name);
+        return registered_block_entity_types.get("tet_" + block_name);
     }
 
     public static BlockEntityType<?> getBlockEntityTypeOfBlock(Block block) {

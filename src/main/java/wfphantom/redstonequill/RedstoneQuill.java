@@ -12,7 +12,6 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import wfphantom.redstonequill.libmc.Networking;
@@ -32,8 +31,8 @@ public class RedstoneQuill {
 
     public RedstoneQuill(IEventBus bus) {
         ModContent.init();
-        bus.addListener(LiveCycleEvents::onRegister);
-        bus.addListener(LiveCycleEvents::onRegisterNetwork);
+        bus.addListener(RedstoneQuill::onRegister);
+        bus.addListener(RedstoneQuill::onRegisterNetwork);
         bus.addListener(RedstoneQuill::onBuildCreativeTabContents);
     }
 
@@ -41,17 +40,13 @@ public class RedstoneQuill {
         if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) event.accept(Registries.getItem("quill"));
     }
 
-    private static class LiveCycleEvents {
-        private static void onRegister(RegisterEvent event) {
-            final String registry_name = event.getRegistry().key().location().toString();
-            if (!registry_name.equals("minecraft:block")) return;
-            Registries.instantiateAll();
-            ModContent.initReferences();
-        }
+    private static void onRegister(RegisterEvent event) {
+        if (!event.getRegistry().key().location().toString().equals("minecraft:block")) return;
+        Registries.instantiateAll();
+        ModContent.initReferences();
+    }
 
-        private static void onRegisterNetwork(final RegisterPayloadHandlersEvent event) {
-            PayloadRegistrar registrar = event.registrar("v1");
-            Networking.init(registrar);
-        }
+    private static void onRegisterNetwork(final RegisterPayloadHandlersEvent event) {
+        Networking.init(event.registrar("v1"));
     }
 }

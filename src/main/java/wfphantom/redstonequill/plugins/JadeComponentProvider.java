@@ -7,11 +7,12 @@ import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
+import wfphantom.redstonequill.RedstoneQuill;
 import wfphantom.redstonequill.blocks.RedstoneTrack;
 
 public enum JadeComponentProvider implements IBlockComponentProvider {
     INSTANCE;
-    private static final ResourceLocation TRACK_POWER_ID = ResourceLocation.fromNamespaceAndPath("redstonequill", "track_power");
+    private static final ResourceLocation TRACK_POWER_ID = ResourceLocation.fromNamespaceAndPath(RedstoneQuill.MODID, "track_power");
 
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {

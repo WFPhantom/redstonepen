@@ -667,11 +667,6 @@ public class RedstoneTrack {
             readnbt(getLevel().registryAccess(), nbt);
         }
 
-        @OnlyIn(Dist.CLIENT)
-        public double getViewDistance() {
-            return 64;
-        }
-
         @Override
         public void onLoad() {
             super.onLoad();

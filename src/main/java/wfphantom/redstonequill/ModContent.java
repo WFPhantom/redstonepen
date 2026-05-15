@@ -14,16 +14,8 @@ import wfphantom.redstonequill.libmc.Registries;
 
 public class ModContent {
     public static void init() {
-        initBlocks();
-        initItems();
-    }
-
-    public static void initBlocks() {
         Registries.addBlock("track", () -> new RedstoneTrack.RedstoneTrackBlock(BlockBehaviour.Properties.of().noCollission().instabreak().dynamicShape().randomTicks()), RedstoneTrack.TrackBlockEntity::new);
-    }
-
-    public static void initItems() {
-        Registries.addItem("quill", () -> new RedstoneQuillItem((new Item.Properties()).stacksTo(1).durability(0)));
+        Registries.addItem("quill", () -> new RedstoneQuillItem(new Item.Properties().stacksTo(1)));
     }
 
     public static void initReferences() {
