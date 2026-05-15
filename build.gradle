@@ -42,8 +42,8 @@ neoForge {
     version = project.neo_version
 
     parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
+        mappingsVersion = "2024.11.17"
+        minecraftVersion = "1.21.1"
     }
 
     // This line is optional. Access Transformers are automatically detected

@@ -26,6 +26,7 @@ public class RedstoneQuill {
     // TODO: Color code lines
     // TODO: Leftover code cleanup
     // TODO: Recipe really doesn't need to be all that
+    // TODO: Make more translatable
     public static final String MODID = "redstonequill";
     public static final Logger LOGGER = LogUtils.getLogger();
 
