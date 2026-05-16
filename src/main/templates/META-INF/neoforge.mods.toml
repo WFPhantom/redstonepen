@@ -33,7 +33,7 @@ displayName="${mod_name}" #mandatory
 updateJSONURL="https://api.modrinth.com/updates/redstone-quill/forge_updates.json?neoforge=only"
 
 # A URL for the "homepage" for this mod, displayed in the mod UI
-displayURL="hhttps://modrinth.com/project/redstone-quill" #optional
+displayURL="https://modrinth.com/project/redstone-quill" #optional
 
 # A file name (in the root of the mod JAR) containing a logo for display
 logoFile="logo.png" #optional

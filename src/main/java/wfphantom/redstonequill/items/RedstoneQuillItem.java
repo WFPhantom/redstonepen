@@ -8,6 +8,8 @@ package wfphantom.redstonequill.items;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -24,8 +26,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import wfphantom.redstonequill.ModContent;
 import wfphantom.redstonequill.blocks.RedstoneTrack;
-import wfphantom.redstonequill.libmc.Inventories;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 public class RedstoneQuillItem extends Item {
@@ -119,30 +123,65 @@ public class RedstoneQuillItem extends Item {
         if (amount > 0) {
             if (stack.getItem() == Items.REDSTONE) {
                 if (stack.getCount() <= stack.getMaxStackSize() - amount) stack.grow(amount);
-                else Inventories.give(player, new ItemStack(Items.REDSTONE, amount));
+                else give(player, new ItemStack(Items.REDSTONE, amount));
             }
-            else Inventories.give(player, new ItemStack(Items.REDSTONE, amount));
+            else give(player, new ItemStack(Items.REDSTONE, amount));
         }
     }
 
     public static void popRedstone(ItemStack stack, int amount, Player player, InteractionHand hand) {
         if (player.isCreative()) return;
         if (amount <= 0) return;
-        Inventories.extract(player, new ItemStack(Items.REDSTONE), amount, false);
         if (stack.getItem() == Items.REDSTONE) {
             if (stack.getCount() <= amount) player.setItemInHand(hand, ItemStack.EMPTY);
             else stack.shrink(amount);
         }
+        else extract(player, new ItemStack(Items.REDSTONE), amount, false);
     }
 
     public static boolean hasEnoughRedstone(ItemStack stack, int amount, Player player) {
         if (player.isCreative()) return true;
-        if (isQuill(stack)) return Inventories.extract(player, new ItemStack(Items.REDSTONE), amount, true).getCount() >= amount;
+        if (isQuill(stack)) return extract(player, new ItemStack(Items.REDSTONE), amount, true).getCount() >= amount;
         else if (stack.getItem() == Items.REDSTONE) return (stack.getCount() >= amount);
         else return false;
     }
 
     public static boolean isQuill(ItemStack stack) {
         return (stack.getItem() instanceof RedstoneQuillItem);
+    }
+
+    private static ItemStack extract(Player player, ItemStack match, int amount, boolean simulate) {
+        if (amount <= 0) return ItemStack.EMPTY;
+        final Container inventory = player.getInventory();
+        final int size = Mth.clamp(36, 0, inventory.getContainerSize());
+        List<ItemStack> matches = new ArrayList<>();
+        for (int i = 0; i < size; ++i) {
+            final ItemStack stack = inventory.getItem(i);
+            if ((!stack.isEmpty()) && (ItemStack.isSameItemSameComponents(stack, match))) matches.add(stack);
+        }
+        matches.sort(Comparator.comparingInt(ItemStack::getCount));
+        if (matches.isEmpty()) return ItemStack.EMPTY;
+        if (!simulate) {
+            int n_left = amount;
+            ItemStack fetched_stack = matches.getFirst().split(n_left);
+            n_left -= fetched_stack.getCount();
+            for (int i = 1; (i < matches.size()) && (n_left > 0); ++i) {
+                ItemStack stack = matches.get(i).split(n_left);
+                n_left -= stack.getCount();
+                fetched_stack.grow(stack.getCount());
+            }
+            return fetched_stack.isEmpty() ? ItemStack.EMPTY : fetched_stack;
+        } else {
+            int total = 0;
+            for (ItemStack m : matches) total += m.getCount();
+            if (total == 0) return ItemStack.EMPTY;
+            ItemStack result = match.copy();
+            result.setCount(Math.min(total, amount));
+            return result;
+        }
+    }
+
+    private static void give(Player entity, ItemStack stack) {
+        entity.getInventory().placeItemBackInInventory(stack);
     }
 }
