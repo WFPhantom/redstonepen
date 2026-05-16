@@ -57,9 +57,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class RedstoneTrack {
-    //--------------------------------------------------------------------------------------------------------------------
-    // Definitions
-    //--------------------------------------------------------------------------------------------------------------------
+    /**
+     Definitions
+    */
 
     public static final class defs {
         public static final long STATE_FLAG_WIR_MASK = 0x0000000000ffffffL;

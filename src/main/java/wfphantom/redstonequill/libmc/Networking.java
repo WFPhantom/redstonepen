@@ -39,9 +39,9 @@ public class Networking {
         });
     }
 
-    //--------------------------------------------------------------------------------------------------------------------
-    // Unified Packet Handling
-    //--------------------------------------------------------------------------------------------------------------------
+    /**
+    * Unified Packet Handling
+    */
     public record UnifiedPayload(UnifiedData data) implements CustomPacketPayload {
         public static final StreamCodec<FriendlyByteBuf, UnifiedPayload> STREAM_CODEC = CustomPacketPayload.codec(UnifiedPayload::write, UnifiedPayload::new);
         public static final CustomPacketPayload.Type<UnifiedPayload> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(RedstoneQuill.MODID, "unpnbt"));
@@ -70,9 +70,9 @@ public class Networking {
         }
     }
 
-    //--------------------------------------------------------------------------------------------------------------------
-    // Tile entity notifications
-    // --------------------------------------------------------------------------------------------------------------------
+    /**
+     Tile entity notifications
+    */
     public interface IPacketTileNotifyReceiver {
         default void onServerPacketReceived(CompoundTag nbt) {
         }
