@@ -37,6 +37,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -47,7 +50,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
-import wfphantom.redstonequill.ModContent;
 import wfphantom.redstonequill.RedstoneQuill;
 import wfphantom.redstonequill.blocks.RedstoneTrack.defs.connections;
 import wfphantom.redstonequill.items.RedstoneQuillItem;
@@ -58,8 +60,8 @@ import java.util.stream.Collectors;
 
 public class RedstoneTrack {
     /**
-     Definitions
-    */
+     * Definitions
+     */
 
     public static final class defs {
         public static final long STATE_FLAG_WIR_MASK = 0x0000000000ffffffL;
@@ -189,30 +191,30 @@ public class RedstoneTrack {
             private static final double SHAPE_LAYER_THICKNESS = 0.01;
             private static final double SHAPE_TRACK_HALFWIDTH = 2;
 
-            private static final VoxelShape DOWN_SHAPE = Auxiliaries.getUnionShape(
-                    Auxiliaries.getPixeledAABB(8 - SHAPE_TRACK_HALFWIDTH, 0, 0, 8 + SHAPE_TRACK_HALFWIDTH, SHAPE_LAYER_THICKNESS, 16),
-                    Auxiliaries.getPixeledAABB(0, 0, 8 - SHAPE_TRACK_HALFWIDTH, 16, SHAPE_LAYER_THICKNESS, 8 + SHAPE_TRACK_HALFWIDTH)
+            private static final VoxelShape DOWN_SHAPE = getUnionShape(
+                    getPixeledAABB(8 - SHAPE_TRACK_HALFWIDTH, 0, 0, 8 + SHAPE_TRACK_HALFWIDTH, SHAPE_LAYER_THICKNESS, 16),
+                    getPixeledAABB(0, 0, 8 - SHAPE_TRACK_HALFWIDTH, 16, SHAPE_LAYER_THICKNESS, 8 + SHAPE_TRACK_HALFWIDTH)
             );
-            private static final VoxelShape UP_SHAPE = Auxiliaries.getUnionShape(
-                    Auxiliaries.getPixeledAABB(8 - SHAPE_TRACK_HALFWIDTH, 16 - SHAPE_LAYER_THICKNESS, 0, 8 + SHAPE_TRACK_HALFWIDTH, 16, 16),
-                    Auxiliaries.getPixeledAABB(0, 16 - SHAPE_LAYER_THICKNESS, 8 - SHAPE_TRACK_HALFWIDTH, 16, 16, 8 + SHAPE_TRACK_HALFWIDTH)
+            private static final VoxelShape UP_SHAPE = getUnionShape(
+                    getPixeledAABB(8 - SHAPE_TRACK_HALFWIDTH, 16 - SHAPE_LAYER_THICKNESS, 0, 8 + SHAPE_TRACK_HALFWIDTH, 16, 16),
+                    getPixeledAABB(0, 16 - SHAPE_LAYER_THICKNESS, 8 - SHAPE_TRACK_HALFWIDTH, 16, 16, 8 + SHAPE_TRACK_HALFWIDTH)
             );
-            private static final VoxelShape WEST_SHAPE = Auxiliaries.getUnionShape(
-                    Auxiliaries.getPixeledAABB(0, 0, 8 - SHAPE_TRACK_HALFWIDTH, SHAPE_LAYER_THICKNESS, 16, 8 + SHAPE_TRACK_HALFWIDTH),
-                    Auxiliaries.getPixeledAABB(0, 8 - SHAPE_TRACK_HALFWIDTH, 0, SHAPE_LAYER_THICKNESS, 8 + SHAPE_TRACK_HALFWIDTH, 16)
+            private static final VoxelShape WEST_SHAPE = getUnionShape(
+                    getPixeledAABB(0, 0, 8 - SHAPE_TRACK_HALFWIDTH, SHAPE_LAYER_THICKNESS, 16, 8 + SHAPE_TRACK_HALFWIDTH),
+                    getPixeledAABB(0, 8 - SHAPE_TRACK_HALFWIDTH, 0, SHAPE_LAYER_THICKNESS, 8 + SHAPE_TRACK_HALFWIDTH, 16)
             );
-            private static final VoxelShape EAST_SHAPE = Auxiliaries.getUnionShape(
-                    Auxiliaries.getPixeledAABB(16 - SHAPE_LAYER_THICKNESS, 0, 8 - SHAPE_TRACK_HALFWIDTH, 16, 16, 8 + SHAPE_TRACK_HALFWIDTH),
-                    Auxiliaries.getPixeledAABB(16 - SHAPE_LAYER_THICKNESS, 8 - SHAPE_TRACK_HALFWIDTH, 0, 16, 8 + SHAPE_TRACK_HALFWIDTH, 16)
+            private static final VoxelShape EAST_SHAPE = getUnionShape(
+                    getPixeledAABB(16 - SHAPE_LAYER_THICKNESS, 0, 8 - SHAPE_TRACK_HALFWIDTH, 16, 16, 8 + SHAPE_TRACK_HALFWIDTH),
+                    getPixeledAABB(16 - SHAPE_LAYER_THICKNESS, 8 - SHAPE_TRACK_HALFWIDTH, 0, 16, 8 + SHAPE_TRACK_HALFWIDTH, 16)
             );
 
-            private static final VoxelShape NORTH_SHAPE = Auxiliaries.getUnionShape(
-                    Auxiliaries.getPixeledAABB(0, 8 - SHAPE_TRACK_HALFWIDTH, 0, 16, 8 + SHAPE_TRACK_HALFWIDTH, SHAPE_LAYER_THICKNESS),
-                    Auxiliaries.getPixeledAABB(8 - SHAPE_TRACK_HALFWIDTH, 0, 0, 8 + SHAPE_TRACK_HALFWIDTH, 16, SHAPE_LAYER_THICKNESS)
+            private static final VoxelShape NORTH_SHAPE = getUnionShape(
+                    getPixeledAABB(0, 8 - SHAPE_TRACK_HALFWIDTH, 0, 16, 8 + SHAPE_TRACK_HALFWIDTH, SHAPE_LAYER_THICKNESS),
+                    getPixeledAABB(8 - SHAPE_TRACK_HALFWIDTH, 0, 0, 8 + SHAPE_TRACK_HALFWIDTH, 16, SHAPE_LAYER_THICKNESS)
             );
-            private static final VoxelShape SOUTH_SHAPE = Auxiliaries.getUnionShape(
-                    Auxiliaries.getPixeledAABB(0, 8 - SHAPE_TRACK_HALFWIDTH, 16 - SHAPE_LAYER_THICKNESS, 16, 8 + SHAPE_TRACK_HALFWIDTH, 16),
-                    Auxiliaries.getPixeledAABB(8 - SHAPE_TRACK_HALFWIDTH, 0, 16 - SHAPE_LAYER_THICKNESS, 8 + SHAPE_TRACK_HALFWIDTH, 16, 16)
+            private static final VoxelShape SOUTH_SHAPE = getUnionShape(
+                    getPixeledAABB(0, 8 - SHAPE_TRACK_HALFWIDTH, 16 - SHAPE_LAYER_THICKNESS, 16, 8 + SHAPE_TRACK_HALFWIDTH, 16),
+                    getPixeledAABB(8 - SHAPE_TRACK_HALFWIDTH, 0, 16 - SHAPE_LAYER_THICKNESS, 8 + SHAPE_TRACK_HALFWIDTH, 16, 16)
             );
 
             // maps are too slow, 64 objects are ok to pre-allocate.
@@ -231,6 +233,16 @@ public class RedstoneTrack {
                     shape_cache[faces] = shape;
                 }
                 return shape_cache[faces];
+            }
+
+            private static AABB getPixeledAABB(double x0, double y0, double z0, double x1, double y1, double z1) {
+                return new AABB(x0 / 16.0, y0 / 16.0, z0 / 16.0, x1 / 16.0, y1 / 16.0, z1 / 16.0);
+            }
+
+            private static VoxelShape getUnionShape(AABB... aabbs) {
+                VoxelShape shape = Shapes.empty();
+                for (AABB aabb : aabbs) shape = Shapes.joinUnoptimized(shape, Shapes.create(aabb), BooleanOp.OR);
+                return shape;
             }
         }
 
@@ -289,7 +301,7 @@ public class RedstoneTrack {
     // Block
     //--------------------------------------------------------------------------------------------------------------------
 
-    public static class RedstoneTrackBlock extends StandardBlocks.Cutout implements EntityBlock {
+    public static class RedstoneTrackBlock extends Block implements EntityBlock {
         public RedstoneTrackBlock(BlockBehaviour.Properties builder) {
             super(builder.pushReaction(PushReaction.DESTROY));
         }
@@ -322,16 +334,17 @@ public class RedstoneTrack {
         }
 
         @Override
-        public boolean hasDynamicDropList() {
-            return true;
-        }
-
-        @Override
-        public List<ItemStack> dropList(BlockState state, Level world, @Nullable BlockEntity te, boolean explosion) {
+        public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+            final BlockEntity te = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
             if (!(te instanceof TrackBlockEntity)) return Collections.emptyList();
             int num_connections = ((TrackBlockEntity) te).getRedstoneDustCount();
             if (num_connections <= 0) return Collections.emptyList();
             return Collections.singletonList(new ItemStack(Items.REDSTONE, num_connections));
+        }
+
+        @Override
+        public boolean isPossibleToRespawnInThis(BlockState state) {
+            return false;
         }
 
         @Override
@@ -428,6 +441,7 @@ public class RedstoneTrack {
         public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
             if (isMoving || state.is(newState.getBlock())) return;
             super.onRemove(state, world, pos, newState, false);
+            world.updateNeighbourForOutputSignal(pos, this);
             if (world.isClientSide()) return;
             notifyAdjacent(world, pos);
         }
@@ -573,7 +587,7 @@ public class RedstoneTrack {
     // Tile entity
     //--------------------------------------------------------------------------------------------------------------------
 
-    public static class TrackBlockEntity extends StandardEntityBlocks.StandardBlockEntity implements Networking.IPacketTileNotifyReceiver {
+    public static class TrackBlockEntity extends BlockEntity implements Networking.IPacketTileNotifyReceiver {
         public static class TrackNet {
             public final List<BlockPos> neighbour_positions;
             public final List<Direction> neighbour_sides;
@@ -615,10 +629,9 @@ public class RedstoneTrack {
         private boolean trace_ = false;
 
         public TrackBlockEntity(BlockPos pos, BlockState state) {
-            super(Registries.getBlockEntityTypeOfBlock(state.getBlock()), pos, state);
+            super(Registries.TRACK_BLOCK_ENTITY.get(), pos, state);
         }
 
-        @Override
         public void readnbt(HolderLookup.Provider hlp, CompoundTag nbt) {
             state_flags_ = nbt.getLong("sflags");
             nets_.clear();
@@ -642,7 +655,6 @@ public class RedstoneTrack {
             }
         }
 
-        @Override
         public CompoundTag writenbt(HolderLookup.Provider hlp, CompoundTag nbt, boolean sync_packet) {
             nbt.putLong("sflags", state_flags_);
             if (sync_packet) return nbt;
@@ -662,6 +674,22 @@ public class RedstoneTrack {
             return nbt;
         }
 
+
+        @Override
+        protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider hlp) {
+            readnbt(hlp, nbt);
+        }
+
+        @Override
+        protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider hlp) {
+            super.saveAdditional(writenbt(hlp, nbt, false), hlp);
+        }
+
+        @Override
+        public CompoundTag getUpdateTag(HolderLookup.Provider hlp) {
+            return writenbt(hlp, super.getUpdateTag(hlp), true);
+        }
+
         @Override
         public void onServerPacketReceived(CompoundTag nbt) {
             readnbt(getLevel().registryAccess(), nbt);
@@ -676,11 +704,8 @@ public class RedstoneTrack {
         public boolean sync(boolean schedule) {
             if (level.isClientSide()) return true;
             setChanged();
-            if (schedule && (!getLevel().getBlockTicks().hasScheduledTick(getBlockPos(), ModContent.references.TRACK_BLOCK))) {
-                getLevel().scheduleTick(getBlockPos(), ModContent.references.TRACK_BLOCK, 1);
-            } else {
-                Networking.PacketTileNotifyServerToClient.sendToPlayers(this, writenbt(getLevel().registryAccess(), new CompoundTag(), true));
-            }
+            if (schedule && (!getLevel().getBlockTicks().hasScheduledTick(getBlockPos(), Registries.TRACK_BLOCK.get()))) getLevel().scheduleTick(getBlockPos(), Registries.TRACK_BLOCK.get(), 1);
+            else Networking.PacketTileNotifyServerToClient.sendToPlayers(this, writenbt(getLevel().registryAccess(), new CompoundTag(), true));
             return true;
         }
 
@@ -914,7 +939,7 @@ public class RedstoneTrack {
         }
 
         private RedstoneTrackBlock getBlock() {
-            return ModContent.references.TRACK_BLOCK;
+            return Registries.TRACK_BLOCK.get();
         }
 
         public boolean handleShapeUpdate(Direction facing, BlockState facingState, BlockPos fromPos, boolean isMoving) {
@@ -1301,5 +1326,4 @@ public class RedstoneTrack {
             }
         }
     }
-
 }

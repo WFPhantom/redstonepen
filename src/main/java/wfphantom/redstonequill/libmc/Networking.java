@@ -28,7 +28,7 @@ public class Networking {
         registrar.playToClient(UnifiedPayload.TYPE, UnifiedPayload.STREAM_CODEC, (unified_payload, context) -> {
             final LocalPlayer player = (LocalPlayer) context.player();
             final Level world = player.level();
-            final CompoundTag payload = unified_payload.data().nbt();
+            final CompoundTag payload = unified_payload.nbt();
             context.enqueueWork(() -> {
                 final BlockPos pos = BlockPos.of(payload.getLong("pos"));
                 final CompoundTag nbt = payload.getCompound("nbt");
@@ -39,44 +39,24 @@ public class Networking {
         });
     }
 
-    /**
-    * Unified Packet Handling
-    */
-    public record UnifiedPayload(UnifiedData data) implements CustomPacketPayload {
+    public record UnifiedPayload(CompoundTag nbt) implements CustomPacketPayload {
         public static final StreamCodec<FriendlyByteBuf, UnifiedPayload> STREAM_CODEC = CustomPacketPayload.codec(UnifiedPayload::write, UnifiedPayload::new);
         public static final CustomPacketPayload.Type<UnifiedPayload> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(RedstoneQuill.MODID, "unpnbt"));
 
         private UnifiedPayload(FriendlyByteBuf buf) {
-            this(new UnifiedData(buf.readNbt()));
+            this(buf.readNbt());
         }
 
         private void write(FriendlyByteBuf buf) {
-            data.write(buf);
+            buf.writeNbt(nbt);
         }
 
         public CustomPacketPayload.Type<UnifiedPayload> type() {
             return TYPE;
         }
-
-        public record UnifiedData(CompoundTag nbt) {
-            public void write(FriendlyByteBuf buf) {
-                buf.writeNbt(nbt);
-            }
-
-            @Override
-            public String toString() {
-                return nbt.toString();
-            }
-        }
     }
-
-    /**
-     Tile entity notifications
-    */
     public interface IPacketTileNotifyReceiver {
-        default void onServerPacketReceived(CompoundTag nbt) {
-        }
-
+        default void onServerPacketReceived(CompoundTag nbt) {}
     }
 
     public static class PacketTileNotifyServerToClient {
@@ -85,7 +65,7 @@ public class Networking {
             final CompoundTag payload = new CompoundTag();
             payload.putLong("pos", te.getBlockPos().asLong());
             payload.put("nbt", nbt);
-            final var unified = new UnifiedPayload(new UnifiedPayload.UnifiedData(payload));
+            final var unified = new UnifiedPayload(payload);
             for (ServerPlayer player : sworld.players()) PacketDistributor.sendToPlayer(player, unified);
         }
     }

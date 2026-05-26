@@ -1,9 +1,3 @@
-/*
- * @file RedstoneQuill.java
- * @author Stefan Wilhelm (wile)
- * @copyright (C) 2020 Stefan Wilhelm
- * @license MIT (see https://opensource.org/licenses/MIT)
- */
 package wfphantom.redstonequill;
 
 import com.mojang.logging.LogUtils;
@@ -12,7 +6,6 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import wfphantom.redstonequill.libmc.Networking;
 import wfphantom.redstonequill.libmc.Registries;
@@ -30,20 +23,13 @@ public class RedstoneQuill {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public RedstoneQuill(IEventBus bus) {
-        ModContent.init();
-        bus.addListener(RedstoneQuill::onRegister);
+        Registries.register(bus);
         bus.addListener(RedstoneQuill::onRegisterNetwork);
         bus.addListener(RedstoneQuill::onBuildCreativeTabContents);
     }
 
     public static void onBuildCreativeTabContents(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) event.accept(Registries.getItem("quill"));
-    }
-
-    private static void onRegister(RegisterEvent event) {
-        if (!event.getRegistry().key().location().toString().equals("minecraft:block")) return;
-        Registries.instantiateAll();
-        ModContent.initReferences();
+        if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) event.accept(Registries.QUILL_ITEM.get());
     }
 
     private static void onRegisterNetwork(final RegisterPayloadHandlersEvent event) {

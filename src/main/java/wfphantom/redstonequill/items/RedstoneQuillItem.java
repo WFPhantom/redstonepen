@@ -24,8 +24,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import wfphantom.redstonequill.ModContent;
 import wfphantom.redstonequill.blocks.RedstoneTrack;
+import wfphantom.redstonequill.libmc.Registries;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -54,7 +54,7 @@ public class RedstoneQuillItem extends Item {
         if (!isQuill(stack)) stack = player.getMainHandItem();
         if (!isQuill(stack)) stack = player.getOffhandItem();
         if (isQuill(stack)) attack(stack, pos, player);
-        if (state.is(ModContent.references.TRACK_BLOCK)) return false;
+        if (state.is(Registries.TRACK_BLOCK.get())) return false;
         return state.getBlock().defaultDestroyTime() < 0.5f;
     }
 
@@ -89,7 +89,7 @@ public class RedstoneQuillItem extends Item {
         } else {
             final BlockHitResult rtr = new BlockHitResult(context.getClickLocation(), context.getClickedFace(), target_pos, context.isInside());
             final BlockPlaceContext ctx = new BlockPlaceContext(Objects.requireNonNull(player), context.getHand(), new ItemStack(Items.REDSTONE), rtr);
-            final BlockState rs_state = ModContent.references.TRACK_BLOCK.getStateForPlacement(ctx);
+            final BlockState rs_state = Registries.TRACK_BLOCK.get().getStateForPlacement(ctx);
             if (rs_state == null) return InteractionResult.FAIL;
             if (!target_state.canBeReplaced(ctx)) return InteractionResult.FAIL;
             if (!world.setBlock(target_pos, rs_state, 1 | 2 | 16)) return InteractionResult.FAIL;
@@ -106,7 +106,7 @@ public class RedstoneQuillItem extends Item {
     private void attack(ItemStack stack, BlockPos pos, Player player) {
         final Level world = player.getCommandSenderWorld();
         final BlockState state = world.getBlockState(pos);
-        if (state.is(ModContent.references.TRACK_BLOCK)) {
+        if (state.is(Registries.TRACK_BLOCK.get())) {
             final HitResult rt = player.pick(10.0, 0f, false);
             if (rt.getType() != HitResult.Type.BLOCK) return;
             final InteractionHand hand = (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() == this) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;

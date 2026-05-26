@@ -28,7 +28,6 @@ import wfphantom.redstonequill.blocks.RedstoneTrack.defs.connections;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class ModRenderers {
     @OnlyIn(Dist.CLIENT)
     public static class TrackTer implements BlockEntityRenderer<RedstoneTrack.TrackBlockEntity> {
@@ -143,5 +142,4 @@ public class ModRenderers {
             mxs.popPose();
         }
     }
-
 }
