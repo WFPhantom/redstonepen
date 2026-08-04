@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${description}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "contact": {
+    "homepage": "${homepage}",
+    "issues": "${issue_tracker}"
+  },
+  "license": "${license}",
+  "icon": "${logo}",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.wfphantom.redstonequill.RedstoneQuill"
+    ],
+    "client": [
+      "com.wfphantom.redstonequill.RedstoneQuillClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=${java_version}"
+  }
+}

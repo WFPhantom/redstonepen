@@ -8,50 +8,54 @@ package com.wfphantom.redstonequill.detail;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wfphantom.redstonequill.RedstoneQuill;
 import com.wfphantom.redstonequill.blocks.RedstoneTrack;
 import com.wfphantom.redstonequill.blocks.RedstoneTrack.defs.connections;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.client.model.data.ModelData;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.wfphantom.redstonequill.RedstoneQuill.LOGGER;
+import static com.wfphantom.redstonequill.RedstoneQuill.MODID;
+
+// Note Fabric since 1.21: ModelResourceLocation now only ResourceLocation,
+//    getModelManager().getModel( RESOURCELOCATION ) added by the Fabric team to make it compatible.
 public class ModRenderers {
-    @OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
     public static class TrackTer implements BlockEntityRenderer<RedstoneTrack.TrackBlockEntity> {
-        private static final ModelResourceLocation[] model_rls = new ModelResourceLocation[RedstoneTrack.defs.STATE_FLAG_WIR_COUNT];
-        private static final ModelResourceLocation[] modelm_rls = new ModelResourceLocation[RedstoneTrack.defs.STATE_FLAG_CON_COUNT];
-        private static final ModelResourceLocation[] modelc_rls = new ModelResourceLocation[RedstoneTrack.defs.STATE_FLAG_CON_COUNT];
+        private static final ResourceLocation[] model_rls = new ResourceLocation[RedstoneTrack.defs.STATE_FLAG_WIR_COUNT];
+        private static final ResourceLocation[] modelm_rls = new ResourceLocation[RedstoneTrack.defs.STATE_FLAG_CON_COUNT];
+        private static final ResourceLocation[] modelc_rls = new ResourceLocation[RedstoneTrack.defs.STATE_FLAG_CON_COUNT];
         private static final ArrayList<Vec3> power_rgb = new ArrayList<>();
         private static int tesr_error_counter = 4;
 
-        public static List<ModelResourceLocation> registerModels() {
-            List<ModelResourceLocation> resources_to_register = new ArrayList<>();
+        public static List<ResourceLocation> registerModels() {
+            List<ResourceLocation> resources_to_register = new ArrayList<>();
 
             RedstoneTrack.defs.models.STATE_WIRE_MAPPING.entrySet().forEach((kv -> {
-                final ModelResourceLocation mrl = new ModelResourceLocation(ResourceLocation.tryBuild(RedstoneQuill.MODID, kv.getValue()).withPrefix("item/"), "standalone");
+                final ResourceLocation mrl = getModelResourceLocation(kv.getValue());
                 for (int i = 0; i < RedstoneTrack.defs.STATE_FLAG_WIR_COUNT; ++i) {
                     if ((kv.getKey() & (1L << (RedstoneTrack.defs.STATE_FLAG_WIR_POS + i))) != 0) {
                         model_rls[i] = mrl;
                         break;
                     }
                 }
-                resources_to_register.add(mrl); //  net.neoforged.client.model.ForgeModelBakery.addSpecialModel(mrl);
+                resources_to_register.add(mrl); //  net.minecraftforge.client.model.ForgeModelBakery.addSpecialModel(mrl);
             }));
             RedstoneTrack.defs.models.STATE_CONNECT_MAPPING.entrySet().forEach((kv -> {
-                ModelResourceLocation mrl = new ModelResourceLocation(ResourceLocation.tryBuild(RedstoneQuill.MODID, kv.getValue()).withPrefix("item/"), "standalone");
+                ResourceLocation mrl = getModelResourceLocation(kv.getValue());
                 for (int i = 0; i < RedstoneTrack.defs.STATE_FLAG_CON_COUNT; ++i) {
                     if ((kv.getKey() & (1L << (RedstoneTrack.defs.STATE_FLAG_CON_POS + i))) != 0) {
                         modelc_rls[i] = mrl;
@@ -61,7 +65,7 @@ public class ModRenderers {
                 resources_to_register.add(mrl);
             }));
             RedstoneTrack.defs.models.STATE_CNTWIRE_MAPPING.entrySet().forEach((kv -> {
-                ModelResourceLocation mrl = new ModelResourceLocation(ResourceLocation.tryBuild(RedstoneQuill.MODID, kv.getValue()).withPrefix("item/"), "standalone");
+                ResourceLocation mrl = getModelResourceLocation(kv.getValue());
                 for (int i = 0; i < RedstoneTrack.defs.STATE_FLAG_CON_COUNT; ++i) {
                     if ((kv.getKey() & (1L << (RedstoneTrack.defs.STATE_FLAG_CON_POS + i))) != 0) {
                         modelm_rls[i] = mrl;
@@ -78,18 +82,28 @@ public class ModRenderers {
             return resources_to_register;
         }
 
+        private static ResourceLocation getModelResourceLocation(String name) {
+            // Fabric non uses ResourceLocation instead of ModelResourceLocation.
+            // Normally, the ModelResourceLocation was e.g.: `ModelResourceLocation mrl = new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(ModConstants.MODID, kv.getValue()), "inventory");`
+            // No file path change desired, so the resource locations point to the item model directory.
+            return ResourceLocation.fromNamespaceAndPath(MODID, name).withPrefix("item/");
+        }
+
         private static Vec3 getPowerRGB(int p) {
             return power_rgb.get(p & 0xf);
         }
 
+        public TrackTer(BlockEntityRendererProvider.Context renderer) {
+        }
 
         @Override
         public void render(final RedstoneTrack.TrackBlockEntity te, float unused1, PoseStack mxs, MultiBufferSource buf, int combinedLightIn, int combinedOverlayIn) {
             if (tesr_error_counter <= 0) return;
             try {
-                final VertexConsumer vxb = buf.getBuffer(Sheets.cutoutBlockSheet());
-                combinedOverlayIn = OverlayTexture.pack(0, 0);
                 mxs.pushPose();
+                final BlockState block_state = te.getBlockState();
+                final VertexConsumer vxb = buf.getBuffer(ItemBlockRenderTypes.getRenderType(block_state, false));
+                combinedOverlayIn = OverlayTexture.pack(0, 0);
                 {
                     final int wirfl = te.getWireFlags();
                     final int wirfc = te.getWireFlagCount();
@@ -98,7 +112,7 @@ public class ModRenderers {
                         if ((wirfl & flag) == 0) continue;
                         final Vec3 rgb = getPowerRGB(te.getSidePower(connections.CONNECTION_BIT_ORDER[i / 4]));
                         final BakedModel model = Minecraft.getInstance().getModelManager().getModel(model_rls[i]);
-                        Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(mxs.last(), vxb, null, model, (float) rgb.x(), (float) rgb.y(), (float) rgb.z(), combinedLightIn, combinedOverlayIn, ModelData.EMPTY, null);
+                        Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(mxs.last(), vxb, null, model, (float) rgb.x(), (float) rgb.y(), (float) rgb.z(), combinedLightIn, combinedOverlayIn);
                     }
                 }
                 {
@@ -112,11 +126,11 @@ public class ModRenderers {
                         final Vec3 rgb = getPowerRGB(te.getSidePower(connections.CONNECTION_BIT_ORDER[i]));
                         final BakedModel model = ((confl & con) == 0) ? Minecraft.getInstance().getModelManager().getModel(modelm_rls[i])  // center model
                                 : Minecraft.getInstance().getModelManager().getModel(modelc_rls[i]); // connection blob model
-                        Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(mxs.last(), vxb, null, model, (float) rgb.x(), (float) rgb.y(), (float) rgb.z(), combinedLightIn, combinedOverlayIn, ModelData.EMPTY, null);
+                        Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(mxs.last(), vxb, null, model, (float) rgb.x(), (float) rgb.y(), (float) rgb.z(), combinedLightIn, combinedOverlayIn);
                     }
                 }
             } catch (Throwable e) {
-                if (--tesr_error_counter <= 0) RedstoneQuill.LOGGER.error("TER was disabled because broken", e);
+                if (--tesr_error_counter <= 0) LOGGER.error("TER was disabled because broken,{}", String.valueOf(e));
             }
             mxs.popPose();
         }

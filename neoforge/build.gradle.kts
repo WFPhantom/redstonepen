@@ -47,7 +47,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("maven.modrinth:jade:${"jade_version"()}")
+    compileOnly("maven.modrinth:jade:${"jade_version"()}+neoforge")
 }
 
 sourceSets.main.get().resources {

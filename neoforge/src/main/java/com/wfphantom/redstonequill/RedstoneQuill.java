@@ -10,14 +10,12 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import org.slf4j.Logger;
 
-
 @Mod(RedstoneQuill.MODID)
 public class RedstoneQuill {
     // TODO: Make work with shaders (emissive texture)
     // TODO: Make redstone unplacable with config
     // TODO: Check why redstone is not updating properly
     // TODO: Color code lines
-    // TODO: Leftover code cleanup
     public static final String MODID = "redstonequill";
     public static final Logger LOGGER = LogUtils.getLogger();
 
